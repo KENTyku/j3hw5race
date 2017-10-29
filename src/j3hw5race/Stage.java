@@ -1,6 +1,6 @@
 package j3hw5race;
 
-public abstract class Stage {
+public abstract class Stage {//этап гонки
     protected int length;
     protected String description;
 
