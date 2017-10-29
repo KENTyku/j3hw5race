@@ -11,22 +11,32 @@
 // и добавлять объекты классов из пакета util.concurrent
 package j3hw5race;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
- * @author user
+ * @author Yuri Tveritin
  */
 public class J3hw5race {
     public static final int CARS_COUNT = 4;
-
+    public static CountDownLatch cdl=new CountDownLatch(CARS_COUNT);//счетчик подготовки потоков(машин)
     public static void main(String[] args) {
+        
         System.out.println("Важное объявление>>>>Подготовка");
         Race race = new Race(new Road(60), new Tunnel(), new Road(40));
         Car[] cars = new Car[CARS_COUNT];
         for (int i = 0; i < cars.length; i++) {
-            cars[i] = new Car(race, 20 + (int) (Math.random() * 10));
+            cars[i] = new Car(race, 20 + (int) (Math.random() * 10),cdl);
         }
         for (int i = 0; i < cars.length; i++) {
             new Thread(cars[i]).start();
+        }
+        try {
+            cdl.await();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(J3hw5race.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println("Важное объявление>>>>Гонка началась!");
         System.out.println("Важное объявление>>>>Гонка закончилась!");
