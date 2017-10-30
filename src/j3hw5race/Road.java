@@ -1,6 +1,6 @@
 package j3hw5race;
 
-public class Road extends Stage {
+public class Road extends Stage {//класс дорога
     public Road(int length) {
         this.length = length;
         this.description = "Дорога " + length + " метров";

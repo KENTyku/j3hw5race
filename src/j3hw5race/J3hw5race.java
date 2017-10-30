@@ -16,8 +16,6 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -25,10 +23,9 @@ import java.util.logging.Logger;
  */
 public class J3hw5race {
     public static final int CARS_COUNT = 4;
-    public static CyclicBarrier cb = new CyclicBarrier(CARS_COUNT+1);//счетчик подготовки потоков(машин)
-    public static CountDownLatch cdl = new CountDownLatch(CARS_COUNT);
-    public static Semaphore smp=new Semaphore(CARS_COUNT/2);
-    public static ArrayList<Thread> thrds= new ArrayList();
+    public static CyclicBarrier cb = new CyclicBarrier(CARS_COUNT+1);//счетчик запуска приостановленных потоков(машины+основной поток main)
+    public static CountDownLatch cdl = new CountDownLatch(CARS_COUNT);//cчетчик событий запуска потоков (машин)
+    public static Semaphore smp=new Semaphore(CARS_COUNT/2);//ограничение на запуск дочерних потоков в туннеле
 
     public static synchronized void main(String[] args) {
         
@@ -39,38 +36,19 @@ public class J3hw5race {
             cars[i] = new Car(race, 20 + (int) (Math.random() * 10),cb,cdl);
         }
         for (int i = 0; i < cars.length; i++) {
-            thrds.add(new Thread(cars[i]));//создаем список потоков (для машин)
-            thrds.get(i).start();//каждую машину запускаем отдельным потоком
-        }
-        
-        
-        try {
-            cb.await();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(J3hw5race.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (BrokenBarrierException ex) {
-            Logger.getLogger(J3hw5race.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        
-        
-        
-
-        System.out.println("Важное объявление>>>>Гонка началась!");
-        try {
-            cb.await();            
-        } catch (InterruptedException ex) {
-            Logger.getLogger(J3hw5race.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (BrokenBarrierException ex) {
-            Logger.getLogger(J3hw5race.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        try {
-            cdl.await();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(J3hw5race.class.getName()).log(Level.SEVERE, null, ex);
+            new Thread(cars[i]).start();//создаем и запускаем отдельные потоки (для машин)
         }      
-            
+        
+        try {            
+            cb.await();//приостанавливаем поток, т.к. ждем пока машины приготовятся к старту                
+            System.out.println("Важное объявление>>>>Гонка началась!");
+            cb.await();//приостанавливаем поток для одновременного запуска с потоками машин              
+            cdl.await();/*приостанавливаем поток для определения из потоков 
+            машин потока, завершившегося первым. По завершению всех потоков 
+            машин (конец гонки) основной поток продолжает работу*/                      
+        } catch (InterruptedException interruptedException) {
+        } catch (BrokenBarrierException brokenBarrierException) {
+        }
         
         System.out.println("Важное объявление>>>>Гонка закончилась!");
     }
