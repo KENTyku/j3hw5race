@@ -1,0 +1,8 @@
+/dist/
+/build/
+*.gitignore
+/build.xml
+/manifest.mf
+!/.gitignore
+/test/
+/nbproject/
